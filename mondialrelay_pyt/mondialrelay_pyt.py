@@ -210,7 +210,7 @@ class MRWebService(object):
         return strg
 
     def create_xmlrequest(self, vals):
-        '''Creates an xml tree fitted to the soap request at WSI2_CreationEtiquette,
+        '''Creates an xml tree fitted to the soap request to WSI2_CreationEtiquette,
         from the given dictionnary. All dictionnary's keys must correspond to a field to pass.
 
         IN = Dictionnary
@@ -272,6 +272,7 @@ class MRWebService(object):
 
         url="http://www.mondialrelay.fr/WebService/Web_Services.asmx?op=WSI2_CreationEtiquette"
         response=requests.post(url,headers=header, data=xml_string, auth=('BDTEST12','MRT_2012'))
+        print response
 #        strresp = req.text
 #        strresp = strresp.replace(ENCODE,'')
 #        tree= etree.fromstring(strresp)
@@ -370,8 +371,13 @@ class MRWebService(object):
         OUT = Raise an error with indications (see MR Doc for numbers correspondances)
         or Expedition Number and URL to PDF'''
 
+        print "resp = MRWebService.create_xmlrequest(self,vals)"
         xmlstring = MRWebService.create_xmlrequest(self, vals)
+
+        print "resp = MRWebService.sendsoaprequest(self,xmlstring)"
         resp = MRWebService.sendsoaprequest(self,xmlstring)
+
+        print "resp = MRWebService.parsexml(self,resp)"
         result = MRWebService.parsexmlresponse(self,resp)
 
         print "\n============== FINAL DICTIONNARY RETURNED ==============\n",result
