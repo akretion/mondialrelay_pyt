@@ -23,8 +23,12 @@
 ##############################################################################
 """
 
-    mondialrelay_pyt is a Python library made to interact with the Mondial Relay's Web Service API.
-    http://www.mondialrelay.fr/webservice/WSI2_CreationEtiquette
+    mondialrelay_pyt is a Python library made to interact with
+    the Mondial Relay's Web Service API : WSI2_CreationEtiquette
+    (http://www.mondialrelay.fr/webservice/WSI2_CreationEtiquette)
+
+    It takes a dictionnary of values required and the format of label wanted
+    and gives the tracking number, and the url to donwload the label in pdf.
 
 """
 
@@ -128,30 +132,28 @@ class MRWebService(object):
 
     def valid_dict(self, dico):
         ''' Get a dictionnary, check if all required fields are provided,
-        and if the values correpond to the required format.
-        Respecting the order in the 'mandatory' list is just a commodity,
-        it's not required as it is in the MR_KEYS ordered dictionay.'''
+        and if the values correpond to the required format.'''
 
         mandatory = [
-            'Enseigne', #0
+            'Enseigne',
             'ModeCol',
             'ModeLiv',
             'Expe_Langage',
             'Expe_Ad1',
-            'Expe_Ad3', #5
+            'Expe_Ad3',
             'Expe_Ville',
             'Expe_CP',
             'Expe_Pays',
             'Expe_Tel1',
-            'Dest_Langage',#10
+            'Dest_Langage',
             'Dest_Ad1',
             'Dest_Ad3',
             'Dest_Ville',
             'Dest_CP',
-            'Dest_Pays',#15
+            'Dest_Pays',
             'Poids',
             'NbColis',
-            'CRT_Valeur',#18
+            'CRT_Valeur',
             ]
 
 
@@ -180,8 +182,13 @@ class MRWebService(object):
 
         return True
 
-    def soapclean_xml(self, xml_string):
-        ''' [XML REQUEST] Ugly hardcode to get ride of specifics headers declarations or namespaces instances.
+    #------------------------------------#
+    #      functions to clean the xml    #
+    #------------------------------------#
+
+    def clean_xmlrequest(self, xml_string):
+        ''' [XML REQUEST]
+        Ugly hardcode to get ride of specifics headers declarations or namespaces instances.
         Used in the xml before sending the request.
         See http://lxml.de/tutorial.html#namespaces or http://effbot.org/zone/element-namespaces.htm
         to improve the library and manage namespaces properly '''
@@ -195,9 +202,10 @@ class MRWebService(object):
 
         return str3
 
-    def clean_response(self, strg):
-        ''' [XML RESPONSE] Ugly hardcode to get ride of specifics headers declarations or namespaces instances.
-        Same as soapclean_xml but for the xml returned by the server.
+    def clean_xmlresponse(self, xml_string):
+        ''' [XML RESPONSE]
+        Ugly hardcode to get ride of specifics headers declarations or namespaces instances.
+        Used in the xml after receiving the response.
         See http://lxml.de/tutorial.html#namespaces or http://effbot.org/zone/element-namespaces.htm
         to improve the library and manage namespaces properly '''
 
@@ -205,12 +213,19 @@ class MRWebService(object):
         env = 'soap:Envelope'
         body= 'soap:Body'
         xmlns=' xmlns="http://www.mondialrelay.fr/webservice/"'
-        strg = strg.replace(head,'').replace(env,'soapEnvelope').replace(body,'soapBody').replace(xmlns,'')
-        strg = strg.replace(ENCODE,'')
-        return strg
+
+        str1 = xml_string.replace(head,'').replace(env,'soapEnvelope').replace(body,'soapBody').replace(xmlns,'')
+        str2 = str1.replace(ENCODE,'')
+
+        return str2
+
+    #------------------------------------#
+    #    functions to manage the xml     #
+    #------------------------------------#
 
     def create_xmlrequest(self, vals):
-        '''Creates an xml tree fitted to the soap request to WSI2_CreationEtiquette,
+        '''[XML REQUEST]
+        Creates an xml tree fitted to the soap request to WSI2_CreationEtiquette,
         from the given dictionnary. All dictionnary's keys must correspond to a field to pass.
 
         IN = Dictionnary
@@ -251,7 +266,7 @@ class MRWebService(object):
 
         # generates and modifies the xml tree to obtain an apropriate xml soap string
         xmltostring = etree.tostring(envl, encoding='utf-8', pretty_print=True)
-        xmlrequest = MRWebService.soapclean_xml(self,xmltostring)
+        xmlrequest = MRWebService.clean_xmlrequest(self,xmltostring)
         print"#============ XML REQUEST=============#\n",xmlrequest,"==================="
 
         return xmlrequest
@@ -271,35 +286,11 @@ class MRWebService(object):
         }
 
         url="http://www.mondialrelay.fr/WebService/Web_Services.asmx?op=WSI2_CreationEtiquette"
+
         #TODO: do not hardcode connexion values
         response=requests.post(url,headers=header, data=xml_string, auth=('BDTEST12','MRT_2012'))
-        print response
-#        strresp = req.text
-#        strresp = strresp.replace(ENCODE,'')
-#        tree= etree.fromstring(strresp)
-#        string = etree.tostring(tree, pretty_print=True, encoding='utf-8')
-#
-#        print "#---------REQUEST---------#"
-#        print "header request======\n",header,"\n"
-#        print "req"
-#        print req
-#        print "req.content----------"
-#        print req.content
-#        print "req.text----------"
-#        print req.text
-#        print "req.headers----------"
-#        print req.headers
-#        print "----------"
-#        print string
-#        print "req.reason: ", req.reason
-#        print "request: ", req.request
-#        print "url: ", req.url
-#        print "config: ", req.config
-#        print "http error: ", req.error
-#        print "encoding: ", req.encoding
-#        print "raise for status: ", req.raise_for_status
-#        print "#---------------------------#"
 
+        print "\n======SOAP RESPONSE =========\n", response, "\n=========================\n"
         return response.content
 
     def parsexmlresponse(self,soap_response):
@@ -308,23 +299,17 @@ class MRWebService(object):
         IN = xml-string utf-8 returned by Mondial Relay
         OUT : Dictionnary or Error'''
 
-        #------- Prompt of the response -------#
-        print "======SOAP RESPONSE ========="
-        print soap_response
-        print "= = = = = = = = = = ="
-
         strresp = soap_response
         strresp = strresp.replace(ENCODE,'')
         tree= etree.fromstring(strresp)
         string = etree.tostring(tree, pretty_print=True, encoding='utf-8')
-        print string
+        print "\n======SOAP RESPONSE'S CONTENT =========\n", string, "\n=========================\n"
+
+        response =  MRWebService.clean_xmlresponse(self, soap_response)
+        soapEnvelope = objectify.fromstring(response)
+        print "\n===== LXML Objectified Tree ======\n",objectify.dump(soapEnvelope),"\n=========================\n"
 
         #---------------Parsing---------------#
-        response =  MRWebService.clean_response(self, soap_response)
-
-        soapEnvelope = objectify.fromstring(response)
-        print "===== LXML Objectified Tree ======\n",objectify.dump(soapEnvelope),"\n==============="
-
         stat = soapEnvelope.soapBody.WSI2_CreationEtiquetteResponse.WSI2_CreationEtiquetteResult.STAT
 
         if stat == 0:
@@ -337,148 +322,33 @@ class MRWebService(object):
 
         return resultat
 
-        #tree_resp = etree.fromstring(response)
-        #print etree.tostring(tree_resp,pretty_print=True)
-        #stat = tree_resp.findtext("{http://www.mondialrelay.fr/webservice/}STAT")
-        #print stat
-        #num_expe = tree_resp.findtext("ExpeditionNum")
-        #url_etiq = tree_resp.findtext("URL_Etiquette")
-        #isnum_expe = tree_resp.find("ExpeditionNum")
-        #isurl_etiq = tree_resp.find("URL_Etiquette")
-
-        #print num_expe
-        #print url_etiq
-        #print isnum_expe
-        #print isurl_etiq
-
-        #for field in ['ExpeditionNum','URL_Etiquette']:
-        #    field_data = tree_resp.findtext(".//"+field)
-
-        #    if not field_data or field_data == '':
-        #        xml_resp = etree.tostring(tree_resp, pretty_print=True)
-        #        raise Exception("Field '%s' not found or empty in xml response "
-        #            "from Mondial Relay.\n Please contact your Web Service "
-        #            "provider.\n XML Response : \n'%s'\n" %(field, xml_resp))
-        #    else:
-        #        num_expe = tree_resp.findtext(".//ExpeditionNum")
-        #        url_etiq = tree_resp.findtext(".//URL_Etiquette")
-
         return True
 
-    #---------------------------#
-    #   WSI2_GetEtiquettes       #
-    #---------------------------#
-
-    def get_label(self, vals, result):
-
-        #gets all the values and puts them in an ordered dictionnary
-        dict_val=collections.OrderedDict([
-            ('Enseigne',vals.get('Enseigne','')),
-            ('Expeditions',unicode(result.get('ExpeditionNum',''))),
-            ('Langue',vals.get('Expe_Langage',''))
-        ])
-
-        # beginning of the xml tree, to be modified later with soapclean_xml()
-        envl = etree.Element('soapEnvelope')
-        body = etree.SubElement(envl, 'soapBody')
-        wsi2_get = etree.SubElement(body,'WSI2_GetEtiquettes')
-
-
-        #creates security check specific to the request
-        security = ""
-        for key in dict_val:
-            xml_element = etree.SubElement(wsi2_get,key)
-            xml_element.text = dict_val.get(key, '')
-            security += dict_val[key]
-
-        security += self.security_key
-        md5secu = md5(security).hexdigest().upper()
-
-        #finish the xml to send
-        xml_security = etree.SubElement(wsi2_get, "Security" )
-        xml_security.text = md5secu
-
-        xml_string = etree.tostring(envl, encoding='utf-8', pretty_print=True)
-
-        #prepare and clean XML
-        env='<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'+' xmlns:xsd="http://www.w3.org/2001/XMLSchema"'+' xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">'
-        wsietiq='<WSI2_GetEtiquettes xmlns="http://www.mondialrelay.fr/webservice/">'
-
-        str1 = xml_string.replace('soapBody','soap:Body').replace('soapEnvelope','soap:Envelope')
-        str2 = str1.replace('<soap:Envelope>',env)
-        xml_request = str2.replace('<WSI2_GetEtiquettes>',wsietiq)
-
-        print"#============ XML REQUEST GET ETIQUETTES=============#\n",xml_request,"==================="
-
-        #Send SOAP Request
-
-        header = {
-            'POST': '/webservice/Web_Services.asmx',
-            'Host': HOST,
-            'Content-Type': 'text/xml',
-            'charset': 'utf-8',
-            'Content-Lenght': 'Lenght',
-            'SOAPAction': 'http://www.mondialrelay.fr/webservice/WSI2_GetEtiquettes',
-        }
-
-        url="http://www.mondialrelay.fr/WebService/Web_Services.asmx?op=WSI2_GetEtiquettes"
-        #TODO: do not pass hardcoded connexion variables
-        response=requests.post(url,headers=header, data=xml_request, auth=('BDTEST12','MRT_2012'))
-
-        print "#============ XML RESPONSE GET ETIQUETTES=============#\n",response.content,"==================="
-
-        # response parsing
-
-        strresp = response.content
-        #strresp = strresp.replace(ENCODE,'')
-        tree= etree.fromstring(strresp)
-        string = etree.tostring(tree, pretty_print=True, encoding='utf-8')
-        print string
-
-        head = ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'
-        env = 'soap:Envelope'
-        body= 'soap:Body'
-        xmlns=' xmlns="http://www.mondialrelay.fr/webservice/"'
-        string = string.replace(head,'').replace(env,'soapEnvelope').replace(body,'soapBody').replace(xmlns,'')
-        string = string.replace(ENCODE,'')
-
-        soapEnvelope = objectify.fromstring(string)
-        print "===== LXML Objectified Tree ======\n",objectify.dump(soapEnvelope),"\n==============="
-
-        urla4 = 'http://'+HOST+soapEnvelope.soapBody.WSI2_GetEtiquettesResponse.WSI2_GetEtiquettesResult.URL_PDF_A4
-        urla5 = 'http://'+HOST+soapEnvelope.soapBody.WSI2_GetEtiquettesResponse.WSI2_GetEtiquettesResult.URL_PDF_A5
-
-        return {'url_pdf_a4': urla4, 'url_pdf_a5': urla5}
-
-
-
-    # FUNCTION TO CALL #
-    def make_shipping_label(self, vals, labelformat):
-        ''' FUNCTION TO CALL TO GET THE DATAS WANTED FROM THE WEB SERVICE
+    #------------------------------------#
+    #       FUNCTION TO CALL             #
+    #------------------------------------#
+    def make_shipping_label(self, dictionnary, labelformat):
+        ''' FUNCTION TO CALL TO GET DATAS WANTED FROM THE WEB SERVICE
         IN = Dictionnary with corresponding keys (see MR_Keys or Mondial Relay's Documentation)
         OUT = Raise an error with indications (see MR Doc for numbers correspondances)
         or Expedition Number and URL to PDF'''
 
-        print "resp = MRWebService.create_xmlrequest(self,vals)"
-        xmlstring = MRWebService.create_xmlrequest(self, vals)
+        print "\n##### MAKE SHIPPING LABEL - MONDIAL RELAY #####\n##### WSI2_CreationEtiquette #####\n"
 
-        print "resp = MRWebService.sendsoaprequest(self,xmlstring)"
+        print "\n+++call MRWebService.create_xmlrequest(self,vals)+++\n"
+        xmlstring = MRWebService.create_xmlrequest(self, dictionnary)
+
+        print "\n+++call MRWebService.sendsoaprequest(self,xmlstring)+++\n"
         resp = MRWebService.sendsoaprequest(self,xmlstring)
 
-        print "resp = MRWebService.parsexml(self,resp)"
+        print "\n+++call  MRWebService.parsexml(self,resp)+++\n"
         result = MRWebService.parsexmlresponse(self,resp)
-        print "===== createetiquette final dict=====", result
 
+        url = result['URL_Etiquette']
         if labelformat == 'A4':
-            url = result['URL_Etiquette']
-        elif labelformat == 'A5':
-            #TODO: just change 'format=A4' to 'format=A5' in the URL_Etiquette
-            # don't need to call another webservice
-
-            print " FORMAT A5"
-            label_urls = MRWebService.get_label(self, vals, result)
-            print "===== getetiquettes final dict ======"
-            url = label_urls['url_pdf_a5']
+            url = url.replace('format=A5','format=A4')
+        if labelformat == 'A5':
+            url = url.replace('format=A4','format=A5')
 
         final = {
                 'ExpeditionNum': result['ExpeditionNum'],
@@ -486,7 +356,7 @@ class MRWebService(object):
                 'format':labelformat,
                 }
 
-        print "\n============== FINAL DICTIONNARY RETURNED ==============\n",final
+        print "\n============== FINAL DICTIONNARY RETURNED ==============\n",final,"\n================================\n"
 
         return final
 
