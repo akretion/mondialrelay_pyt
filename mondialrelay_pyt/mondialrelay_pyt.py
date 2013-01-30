@@ -164,7 +164,7 @@ class MRWebService(object):
             if element not in MR_KEYS:
                 raise Exception('Key %s not valid in given dictionnary' %element)
             formt = MR_KEYS[element]
-            if re.match(formt, dico[element].upper()) == None:
+            if dico[element] and re.match(formt, dico[element].upper()) == None:
                 raise Exception('Value %s not valid in given dictionary, key %s, expected format %s' %(dico[element],element, MR_KEYS[element]))
 
         if dico['ModeLiv'] == "24R":
