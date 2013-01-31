@@ -36,6 +36,8 @@ __author__ = "Sébastien BEAU / Aymeric LECOMTE"
 __version__ = "0.1.0"
 __date__ = "2012-12-06"
 
+# /!\ Authentification values to the MRbase are hardcoded l 293 /!\
+#
 # TO IMPROVE:
 #
 # Decembre 2012, 12th :
@@ -271,7 +273,7 @@ class MRWebService(object):
 
         return xmlrequest
 
-    def sendsoaprequest(self, xml_string):
+    def sendsoaprequest(self, xml_string, store):
         ''' Send the POST request to the Web Service.
         IN = proper xml-string
         OUT = response from the Web Service, in an xml-string utf-8'''
@@ -287,8 +289,9 @@ class MRWebService(object):
 
         url="http://www.mondialrelay.fr/WebService/Web_Services.asmx?op=WSI2_CreationEtiquette"
 
-        #TODO: do not hardcode connexion values
-        response=requests.post(url,headers=header, data=xml_string, auth=('BDTEST12','MRT_2012'))
+        #TODO: do not hardcode connexion values #DONE
+        #response=requests.post(url,headers=header, data=xml_string, auth=('BDTEST12','MRT_2012'))
+        response=requests.post(url,headers=header, data=xml_string, auth=(store,self.security_key))
 
         print "\n======SOAP RESPONSE =========\n", response, "\n=========================\n"
         return response.content
@@ -339,7 +342,8 @@ class MRWebService(object):
         xmlstring = MRWebService.create_xmlrequest(self, dictionnary)
 
         print "\n+++call MRWebService.sendsoaprequest(self,xmlstring)+++\n"
-        resp = MRWebService.sendsoaprequest(self,xmlstring)
+        storename=dictionnary['Enseigne']
+        resp = MRWebService.sendsoaprequest(self,xmlstring, storename)
 
         print "\n+++call  MRWebService.parsexml(self,resp)+++\n"
         result = MRWebService.parsexmlresponse(self,resp)
