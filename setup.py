@@ -18,13 +18,13 @@ setup(
     include_package_data = True,
 
     # Package dependencies.
-    install_requires = ['lxml'],
+    install_requires = ['lxml', 'unicode'],
 
     # Metadata for PyPI.
     author = 'Aymeric Lecomte, Sebastien Beau',
     author_email = 'aymeric.lecomte@akretion.com, sebastien.beau@akretion.com',
     license = 'GNU AGPL-3',
-    url = 'https://code.launchpad.net/~akretion-team/+junk/mondialrelay_pyt',
+    url = 'http://github.com/akretion/mondialrelay_pyt',
     packages=['mondialrelay_pyt'],
     keywords = 'mondial relay api client',
     description = 'A library to access Mondial Relay WSI2_CreateEtiquette Web Service from Python.',
