@@ -255,9 +255,6 @@ class MRWebService(object):
         security+=self.security_key
         md5secu = md5(security).hexdigest().upper()
 
-        print "Security string : ", security, "\n"
-        print "MD5 Key : ", md5secu, "\n"
-
         xml_security = etree.SubElement(wsi2_crea, "Security" )
         xml_security.text = md5secu
 
@@ -269,8 +266,6 @@ class MRWebService(object):
         # generates and modifies the xml tree to obtain an apropriate xml soap string
         xmltostring = etree.tostring(envl, encoding='utf-8', pretty_print=True)
         xmlrequest = MRWebService.clean_xmlrequest(self,xmltostring)
-        print"#============ XML REQUEST=============#\n",xmlrequest,"==================="
-
         return xmlrequest
 
     def sendsoaprequest(self, xml_string, store):
@@ -288,12 +283,8 @@ class MRWebService(object):
         }
 
         url="http://www.mondialrelay.fr/WebService/Web_Services.asmx?op=WSI2_CreationEtiquette"
-
-        #TODO: do not hardcode connexion values #DONE
-        #response=requests.post(url,headers=header, data=xml_string, auth=('BDTEST12','MRT_2012'))
         response=requests.post(url,headers=header, data=xml_string, auth=(store,self.security_key))
 
-        print "\n======SOAP RESPONSE =========\n", response, "\n=========================\n"
         return response.content
 
     def parsexmlresponse(self,soap_response):
@@ -306,11 +297,9 @@ class MRWebService(object):
         strresp = strresp.replace(ENCODE,'')
         tree= etree.fromstring(strresp)
         string = etree.tostring(tree, pretty_print=True, encoding='utf-8')
-        print "\n======SOAP RESPONSE'S CONTENT =========\n", string, "\n=========================\n"
 
         response =  MRWebService.clean_xmlresponse(self, soap_response)
         soapEnvelope = objectify.fromstring(response)
-        print "\n===== LXML Objectified Tree ======\n",objectify.dump(soapEnvelope),"\n=========================\n"
 
         #---------------Parsing---------------#
         stat = soapEnvelope.soapBody.WSI2_CreationEtiquetteResponse.WSI2_CreationEtiquetteResult.STAT
@@ -336,16 +325,11 @@ class MRWebService(object):
         OUT = Raise an error with indications (see MR Doc for numbers correspondances)
         or Expedition Number and URL to PDF'''
 
-        print "\n##### MAKE SHIPPING LABEL - MONDIAL RELAY #####\n##### WSI2_CreationEtiquette #####\n"
-
-        print "\n+++call MRWebService.create_xmlrequest(self,vals)+++\n"
         xmlstring = MRWebService.create_xmlrequest(self, dictionnary)
 
-        print "\n+++call MRWebService.sendsoaprequest(self,xmlstring)+++\n"
         storename=dictionnary['Enseigne']
         resp = MRWebService.sendsoaprequest(self,xmlstring, storename)
 
-        print "\n+++call  MRWebService.parsexml(self,resp)+++\n"
         result = MRWebService.parsexmlresponse(self,resp)
 
         url = result['URL_Etiquette']
@@ -359,8 +343,6 @@ class MRWebService(object):
                 'URL_Etiquette': url,
                 'format':labelformat,
                 }
-
-        print "\n============== FINAL DICTIONNARY RETURNED ==============\n",final,"\n================================\n"
 
         return final
 
