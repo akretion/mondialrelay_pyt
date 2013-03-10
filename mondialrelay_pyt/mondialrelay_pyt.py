@@ -304,7 +304,7 @@ class MRWebService(object):
     #------------------------------------#
     #       FUNCTION TO CALL             #
     #------------------------------------#
-    def make_shipping_label(self, dictionnary, labelformat):
+    def make_shipping_label(self, dictionnary, labelformat="A4"):
         ''' FUNCTION TO CALL TO GET DATAS WANTED FROM THE WEB SERVICE
         IN = Dictionnary with corresponding keys (see MR_Keys or Mondial Relay's Documentation)
         OUT = Raise an error with indications (see MR Doc for numbers correspondances)
@@ -320,12 +320,13 @@ class MRWebService(object):
         resp = MRWebService.sendsoaprequest(self,xmlstring, storename)
 
         result = MRWebService.parsexmlresponse(self,resp)
-
         url = result['URL_Etiquette']
-        if labelformat == 'A4':
-            url = url.replace('format=A5','format=A4')
+
+        #switch url if default format is not A4
         if labelformat == 'A5':
             url = url.replace('format=A4','format=A5')
+        if labelformat == '10x15':
+            url = url.replace('format=A4','format=10x15')
 
         final = {
                 'ExpeditionNum': result['ExpeditionNum'],
