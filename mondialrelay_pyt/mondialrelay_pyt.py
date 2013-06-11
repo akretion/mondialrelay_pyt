@@ -58,6 +58,8 @@ import collections
 HOST= 'www.mondialrelay.fr'
 ENCODE = '<?xml version="1.0" encoding="utf-8"?>'
 
+#TODO add error code after the regex to use it in the raise
+#('Enseigne',{"^[0-9A-Z]{2}[0-9A-Z]{6}$" : 30}),
 MR_KEYS = collections.OrderedDict([
     ('Enseigne',"^[0-9A-Z]{2}[0-9A-Z]{6}$"),
     ('ModeCol',"^(CCC|CDR|CDS|REL)$"),
@@ -107,6 +109,89 @@ MR_KEYS = collections.OrderedDict([
     ('Texte',"^([^<>&']{3,30})(\(cr\)[^<>&']{0,30})")
     ])
 
+API_ERRORS_MESSAGE = {
+    1 : u"Enseigne invalide",
+    2 : u"Numéro d'enseigne vide ou inexistant",
+    3 : u"Numéro de compte enseigne invalide",
+    5 : u"Numéro de dossier enseigne invalide",
+    7 : u"Numéro de client enseigne invalide",
+    8 : u"Mot de passe ou hachage invalide",
+    9 : u"Ville non reconnu ou non unique",
+    10 : u"Type de collecte invalide",
+    11 : u"Numéro de Relais de Collecte invalide",
+    12 : u"Pays de Relais de collecte invalide",
+    13 : u"Type de livraison invalide",
+    14 : u"Numéro de Relais de livraison invalide",
+    15 : u"Pays de Relais de livraison invalide",
+    20 : u"Poids du colis invalide",
+    21 : u"Taille (Longueur + Hauteur) du colis invalide",
+    22 : u"Taille du Colis invalide",
+    24 : u"Numéro d'expédition ou de suivi invalide",
+    26 : u"Temps de montage invalide",
+    27 : u"Mode de collecte ou de livraison invalide",
+    28 : u"Mode de collecte invalide",
+    29 : u"Mode de livraison invalide",
+    30 : u"Adresse (L1) invalide",
+    31 : u"Adresse (L2) invalide",
+    33 : u"Adresse (L3) invalide",
+    34 : u"Adresse (L4) invalide",
+    35 : u"Ville invalide",
+    36 : u"Code postal invalide",
+    37 : u"Pays invalide",
+    38 : u"Numéro de téléphone invalide, modifier le numéro sur l'adresse de l'expédition (il peut manquer un '+')",
+    39 : u"Adresse e-mail invalide",
+    40 : u"Paramètres manquants",
+    42 : u"Montant CRT invalide",
+    43 : u"Devise CRT invalide",
+    44 : u"Valeur du colis invalide",
+    45 : u"Devise de la valeur du colis invalide",
+    46 : u"Plage de numéro d'expédition épuisée",
+    47 : u"Nombre de colis invalide",
+    48 : u"Multi-Colis Relais Interdit",
+    49 : u"Action invalide",
+    60 : u"Champ texte libre invalide (Ce code erreur n'est pas invalidant)",
+    61 : u"Top avisage invalide",
+    62 : u"Instruction de livraison invalide",
+    63 : u"Assurance invalide",
+    64 : u"Temps de montage invalide",
+    65 : u"Top rendez-vous invalide",
+    66 : u"Top reprise invalide",
+    67 : u"Latitude invalide",
+    68 : u"Longitude invalide",
+    69 : u"Code Enseigne invalide",
+    70 : u"Numéro de Point Relais invalide",
+    71 : u"Nature de point de vente non valide",
+    74 : u"Langue invalide",
+    78 : u"Pays de Collecte invalide",
+    79 : u"Pays de Livraison invalide",
+    80 : u"Code tracing : Colis enregistré",
+    81 : u"Code tracing : Colis en traitement chez Mondial Relay",
+    82 : u"Code tracing : Colis livré",
+    83 : u"Code tracing : Anomalie",
+    84 : u"(Réservé Code Tracing)",
+    85 : u"(Réservé Code Tracing)",
+    86 : u"(Réservé Code Tracing)",
+    87 : u"(Réservé Code Tracing)",
+    88 : u"(Réservé Code Tracing)",
+    89 : u"(Réservé Code Tracing)",
+    93 : u"Aucun élément retourné par le plan de tri Si vous effectuez une "
+        u"collecte ou une livraison en Point Relais, vérifiez que les Point "
+        u"Relaissont bien disponibles. Si vous effectuez une livraison à domicile, "
+        u"il est probable que le codepostal que vous avez indiquez n'existe pas.",
+    94 : u"Colis Inexistant",
+    95 : u"Compte Enseigne non activé",
+    96 : u"Type d'enseigne incorrect en Base",
+    97 : u"Clé de sécurité invalide Cf. : § « Génération de la clé de sécurité »",
+    98 : u"Erreur générique (Paramètres invalides) Cette erreur masque une autre "
+        u"erreur de la liste et ne peut se produire que dans le cas où le "
+        u"compte utilisé est en mode « Production »."
+        u" Cf. : § « Fonctionnement normal et debugage »",
+    99 : u"Erreur générique du service Cette erreur peut être dû à un problème "
+        u"technique du service. Veuillez notifier cette erreur à Mondial Relay en "
+        u"précisant la date et l'heure de la requête ainsi que les paramètres "
+        u"envoyés afin d'effectuer une vérification.",
+}
+
 #------------------------------------------#
 #       Mondial Relay WEBService           #
 #        WSI2_CreationEtiquette            #
@@ -151,8 +236,8 @@ class MRWebService(object):
             if element not in MR_KEYS:
                 raise Exception('Key %s not valid in given dictionnary' %element)
             formt = MR_KEYS[element]
-            if dico[element] and re.match(formt, dico[element].upper()) == None:
-                raise Exception('Value %s not valid in given dictionary, key %s, expected format %s' %(dico[element],element, MR_KEYS[element]))
+            #if dico[element] and re.match(formt, dico[element].upper()) == None:
+            #    raise Exception('Value %s not valid in given dictionary, key %s, expected format %s' %(dico[element],element, MR_KEYS[element]))
 
         if dico['ModeLiv'] == "24R":
             mandatory.insert(19,'LIV_Rel')
@@ -295,10 +380,11 @@ class MRWebService(object):
             resultat={'STAT':stat,'ExpeditionNum':NumExpe,'URL_Etiquette':urlpdf}
         else:
             resultat={'STAT':stat}
-            raise Exception('The server return %s . Please check mondial relay documentation for help' %stat)
+            explanation = API_ERRORS_MESSAGE.get(stat)
+            raise Exception('The server returned %s . The mondial relay documentation says %s' % (stat,explanation))
 
         return resultat
-
+        #TOFIX ?
         return True
 
     #------------------------------------#

@@ -18,7 +18,7 @@ setup(
     include_package_data = True,
 
     # Package dependencies.
-    install_requires = ['lxml', 'unicode'],
+#    install_requires = ['lxml'] 
 
     # Metadata for PyPI.
     author = 'Aymeric Lecomte, Sebastien Beau',
