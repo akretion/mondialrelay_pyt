@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
@@ -56,7 +56,7 @@ import collections
 #-----------------------------------------#
 
 HOST= 'www.mondialrelay.fr'
-ENCODE = '<?xml version="1.0" encoding="utf-8"?>'
+ENCODE = b'<?xml version="1.0" encoding="utf-8"?>'
 
 #TODO add error code after the regex to use it in the raise
 #('Enseigne',{"^[0-9A-Z]{2}[0-9A-Z]{6}$" : 30}),
@@ -265,12 +265,12 @@ class MRWebService(object):
         See http://lxml.de/tutorial.html#namespaces or http://effbot.org/zone/element-namespaces.htm
         to improve the library and manage namespaces properly '''
 
-        env='<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'+' xmlns:xsd="http://www.w3.org/2001/XMLSchema"'+' xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">'
-        wsietiq='<WSI2_CreationEtiquette xmlns="http://www.mondialrelay.fr/webservice/">'
+        env=b'<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'+b' xmlns:xsd="http://www.w3.org/2001/XMLSchema"'+b' xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">'
+        wsietiq=b'<WSI2_CreationEtiquette xmlns="http://www.mondialrelay.fr/webservice/">'
 
-        str1 = xml_string.replace('soapBody','soap:Body').replace('soapEnvelope','soap:Envelope')
-        str2 = str1.replace('<soap:Envelope>',env)
-        str3 = str2.replace('<WSI2_CreationEtiquette>',wsietiq)
+        str1 = xml_string.replace(b'soapBody',b'soap:Body').replace(b'soapEnvelope',b'soap:Envelope')
+        str2 = str1.replace(b'<soap:Envelope>',env)
+        str3 = str2.replace(b'<WSI2_CreationEtiquette>',wsietiq)
 
         return str3
 
@@ -281,13 +281,13 @@ class MRWebService(object):
         See http://lxml.de/tutorial.html#namespaces or http://effbot.org/zone/element-namespaces.htm
         to improve the library and manage namespaces properly '''
 
-        head = ' xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"'
-        env = 'soap:Envelope'
-        body= 'soap:Body'
-        xmlns=' xmlns="http://www.mondialrelay.fr/webservice/"'
+        head = b' xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"'
+        env = b'soap:Envelope'
+        body= b'soap:Body'
+        xmlns=b' xmlns="http://www.mondialrelay.fr/webservice/"'
 
-        str1 = xml_string.replace(head,'').replace(env,'soapEnvelope').replace(body,'soapBody').replace(xmlns,'')
-        str2 = str1.replace(ENCODE,'')
+        str1 = xml_string.replace(head,b'').replace(env,b'soapEnvelope').replace(body,b'soapBody').replace(xmlns,b'')
+        str2 = str1.replace(ENCODE,b'')
 
         return str2
 
@@ -323,7 +323,7 @@ class MRWebService(object):
 
         # generates <Security/> xml element
         security+=self.security_key
-        md5secu = md5(security).hexdigest().upper()
+        md5secu = md5(security.encode('utf-8')).hexdigest().upper()
 
         xml_security = etree.SubElement(wsi2_crea, "Security" )
         xml_security.text = md5secu
@@ -364,7 +364,7 @@ class MRWebService(object):
         OUT : Dictionnary or Error'''
 
         strresp = soap_response
-        strresp = strresp.replace(ENCODE,'')
+        strresp = strresp.replace(ENCODE,b'')
         tree= etree.fromstring(strresp)
         string = etree.tostring(tree, pretty_print=True, encoding='utf-8')
 
@@ -376,7 +376,7 @@ class MRWebService(object):
 
         if stat == 0:
             NumExpe = soapEnvelope.soapBody.WSI2_CreationEtiquetteResponse.WSI2_CreationEtiquetteResult.ExpeditionNum
-            urlpdf = 'http://'+HOST+soapEnvelope.soapBody.WSI2_CreationEtiquetteResponse.WSI2_CreationEtiquetteResult.URL_Etiquette
+            urlpdf = 'http://'+HOST+str(soapEnvelope.soapBody.WSI2_CreationEtiquetteResponse.WSI2_CreationEtiquetteResult.URL_Etiquette)
             resultat={'STAT':stat,'ExpeditionNum':NumExpe,'URL_Etiquette':urlpdf}
         else:
             resultat={'STAT':stat}
