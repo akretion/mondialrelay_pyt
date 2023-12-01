@@ -1,14 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 from mondialrelay_pyt import MRWebService
 
-connexion = MRWebService("MRT_2012")
+connexion = MRWebService("PrivateK")
 
 dico = {
-        'Enseigne':'BDTEST12',
+        'Enseigne':'BDTEST13',
         'ModeCol':'CCC',
-        'ModeLiv':'LDS',
+        'ModeLiv':'LCC',
         'NDossier':'1234',
         'NClient':'123456789',
         'Expe_Langage':'FR',
@@ -16,7 +16,7 @@ dico = {
         #'Expe_Ad2':,
         'Expe_Ad3':'rue dailleurs',
         #'Expe_Ad4':,
-        'Expe_Ville':'hgzkh',
+        'Expe_Ville':'Machin Ville',
         'Expe_CP':'69100',
         'Expe_Pays':'FR',
         'Expe_Tel1':'0033445566778',
@@ -37,14 +37,14 @@ dico = {
         'Longueur':'145',
         #'Taille':,
         'NbColis':'1',
-        'CRT_Valeur':'124',
+        'CRT_Valeur':'0',
         #'CRT_Devise':,
         #'EXP_Valeur':,
         #'EXP_Devise':,
         #'COL_Rel_Pays':,
         #'COL_Rel':,
-        #'LIV_Rel_Pays':,
-        #'LIV_Rel':,
+        'LIV_Rel_Pays':'FR',
+        'LIV_Rel':'78857',
         #'TAvisage':,
         #'TReprise':,
         #'Montage':,
@@ -73,5 +73,6 @@ format=A4&amp;crc=9579B14BCF9FA5B894A27A952DD90CC7</URL_Etiquette>\
 
 
 
-reqst = connexion.make_etiquette(dico)
+reqst = connexion.make_shipping_label(dico)
 
+print (reqst)
