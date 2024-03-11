@@ -55,7 +55,7 @@ import collections
 #               CONSTANTS                 #
 #-----------------------------------------#
 
-HOST= 'www.mondialrelay.fr'
+HOST= 'api.mondialrelay.com'
 ENCODE = b'<?xml version="1.0" encoding="utf-8"?>'
 
 #TODO add error code after the regex to use it in the raise
@@ -344,15 +344,15 @@ class MRWebService(object):
         OUT = response from the Web Service, in an xml-string utf-8'''
 
         header = {
-            'POST': '/webservice/Web_Services.asmx',
+            'POST': '/Web_Services.asmx',
             'Host': HOST,
             'Content-Type': 'text/xml',
             'charset': 'utf-8',
             'Content-Lenght': 'Lenght',
             'SOAPAction': 'http://www.mondialrelay.fr/webservice/WSI2_CreationEtiquette',
         }
-
-        url="http://www.mondialrelay.fr/WebService/Web_Services.asmx?op=WSI2_CreationEtiquette"
+        
+        url="https://api.mondialrelay.com/Web_Services.asmx"
         response=requests.post(url,headers=header, data=xml_string, auth=(store,self.security_key))
 
         return response.content
@@ -404,6 +404,8 @@ class MRWebService(object):
 
         storename=dictionnary['Enseigne']
         resp = MRWebService.sendsoaprequest(self,xmlstring, storename)
+
+        print (resp)
 
         result = MRWebService.parsexmlresponse(self,resp)
         url = result['URL_Etiquette']
