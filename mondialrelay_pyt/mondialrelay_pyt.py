@@ -376,7 +376,7 @@ class MRWebService(object):
 
         if stat == 0:
             NumExpe = soapEnvelope.soapBody.WSI2_CreationEtiquetteResponse.WSI2_CreationEtiquetteResult.ExpeditionNum
-            urlpdf = 'http://'+HOST+str(soapEnvelope.soapBody.WSI2_CreationEtiquetteResponse.WSI2_CreationEtiquetteResult.URL_Etiquette)
+            urlpdf = 'https://' + HOST.replace('api', 'www') + str(soapEnvelope.soapBody.WSI2_CreationEtiquetteResponse.WSI2_CreationEtiquetteResult.URL_Etiquette)
             resultat={'STAT':stat,'ExpeditionNum':NumExpe,'URL_Etiquette':urlpdf}
         else:
             resultat={'STAT':stat}
@@ -404,8 +404,6 @@ class MRWebService(object):
 
         storename=dictionnary['Enseigne']
         resp = MRWebService.sendsoaprequest(self,xmlstring, storename)
-
-        print (resp)
 
         result = MRWebService.parsexmlresponse(self,resp)
         url = result['URL_Etiquette']
